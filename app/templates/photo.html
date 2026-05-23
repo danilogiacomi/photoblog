@@ -181,52 +181,56 @@ function navigateInPage(url) {
   var fsImg = overlay.querySelector("img");
   var mainImg = document.getElementById("photo-img");
 
+  // Start fade-out and fetch in parallel
   fsImg.style.opacity = "0";
   mainImg.style.opacity = "0";
 
-  fetch(baseUrl)
-    .then(function(r) { return r.text(); })
-    .then(function(html) {
-      var doc = new DOMParser().parseFromString(html, "text/html");
+  var fetchDone = fetch(baseUrl).then(function(r) { return r.text(); });
+  var fadeDone = new Promise(function(resolve) { setTimeout(resolve, 350); });
 
-      var newImg = doc.querySelector("#fs-overlay img");
-      if (newImg) {
-        var tmp = new Image();
-        tmp.onload = function() {
-          fsImg.src = tmp.src;
-          mainImg.src = tmp.src;
-          fsImg.style.opacity = "1";
-          mainImg.style.opacity = "1";
-        };
-        tmp.src = newImg.src;
-      }
+  // Apply new image only after both fade-out AND fetch are complete
+  Promise.all([fetchDone, fadeDone]).then(function(results) {
+    var html = results[0];
+    var doc = new DOMParser().parseFromString(html, "text/html");
 
-      // Update prev/next arrows in overlay
-      var newPrev = doc.getElementById("fs-prev");
-      var newNext = doc.getElementById("fs-next");
-      var fsPrev = document.getElementById("fs-prev");
-      var fsNext = document.getElementById("fs-next");
-      if (fsPrev) fsPrev.href = newPrev ? newPrev.getAttribute("href") : "#";
-      if (fsNext) fsNext.href = newNext ? newNext.getAttribute("href") : "#";
-      if (!newPrev && fsPrev) fsPrev.style.display = "none";
-      else if (fsPrev) fsPrev.style.display = "";
-      if (!newNext && fsNext) fsNext.style.display = "none";
-      else if (fsNext) fsNext.style.display = "";
+    var newImg = doc.querySelector("#fs-overlay img");
+    if (newImg) {
+      var tmp = new Image();
+      tmp.onload = function() {
+        fsImg.src = tmp.src;
+        mainImg.src = tmp.src;
+        fsImg.style.opacity = "1";
+        mainImg.style.opacity = "1";
+      };
+      tmp.src = newImg.src;
+    }
 
-      // Update normal prev/next links
-      var normalPrev = doc.getElementById("prev-link");
-      var normalNext = doc.getElementById("next-link");
-      var lp = document.getElementById("prev-link");
-      var ln = document.getElementById("next-link");
-      if (lp) lp.href = normalPrev ? normalPrev.getAttribute("href") : "#";
-      if (ln) ln.href = normalNext ? normalNext.getAttribute("href") : "#";
-      if (!normalPrev && lp) lp.style.display = "none";
-      else if (lp) lp.style.display = "";
-      if (!normalNext && ln) ln.style.display = "none";
-      else if (ln) ln.style.display = "";
+    // Update prev/next arrows in overlay
+    var newPrev = doc.getElementById("fs-prev");
+    var newNext = doc.getElementById("fs-next");
+    var fsPrev = document.getElementById("fs-prev");
+    var fsNext = document.getElementById("fs-next");
+    if (fsPrev) fsPrev.href = newPrev ? newPrev.getAttribute("href") : "#";
+    if (fsNext) fsNext.href = newNext ? newNext.getAttribute("href") : "#";
+    if (!newPrev && fsPrev) fsPrev.style.display = "none";
+    else if (fsPrev) fsPrev.style.display = "";
+    if (!newNext && fsNext) fsNext.style.display = "none";
+    else if (fsNext) fsNext.style.display = "";
 
-      history.pushState(null, "", baseUrl);
-    });
+    // Update normal prev/next links
+    var normalPrev = doc.getElementById("prev-link");
+    var normalNext = doc.getElementById("next-link");
+    var lp = document.getElementById("prev-link");
+    var ln = document.getElementById("next-link");
+    if (lp) lp.href = normalPrev ? normalPrev.getAttribute("href") : "#";
+    if (ln) ln.href = normalNext ? normalNext.getAttribute("href") : "#";
+    if (!normalPrev && lp) lp.style.display = "none";
+    else if (lp) lp.style.display = "";
+    if (!normalNext && ln) ln.style.display = "none";
+    else if (ln) ln.style.display = "";
+
+    history.pushState(null, "", baseUrl);
+  });
 }
 
 function enterFullscreen() {
