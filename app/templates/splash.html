@@ -141,12 +141,7 @@
       text-shadow: 0 2px 16px rgba(0,0,0,0.95), 0 0 40px rgba(0,0,0,0.8);
     }
     .hero-enter:hover { color: #fff; border-color: #fff; }
-    @keyframes flicker {
-      0%   { opacity: 1; }
-      10%  { opacity: 0.35; }
-      20%  { opacity: 1; }
-      100% { opacity: 1; }
-    }
+    .hero-enter span { display: inline-block; transition: transform 0.12s ease; }
 
     /* Bottom-center social icons */
     .hero-social {
@@ -224,22 +219,40 @@
       introBlock.classList.add("shrink");
     }, 1800);
 
-    // Flicker with random interval between 2s and 5s
+    // Wave flicker: each letter flickers left to right, then pause 2-5s and repeat
     var enterLink = document.querySelector(".hero-enter");
-    function scheduleFlicker() {
-      var delay = 2000 + Math.random() * 3000;
+    var letters = enterLink.textContent.split("");
+    enterLink.textContent = "";
+    var spans = letters.map(function(ch) {
+      var s = document.createElement("span");
+      s.textContent = ch;
+      enterLink.appendChild(s);
+      return s;
+    });
+
+    function flickerLetter(span, onDone) {
+      span.style.transform = "scale(1.6)";
       setTimeout(function() {
-        enterLink.style.animation = "none";
-        enterLink.offsetHeight; // reflow
-        var duration = (0.4 + Math.random() * 0.4).toFixed(2);
-        enterLink.style.animation = "flicker " + duration + "s ease";
-        enterLink.addEventListener("animationend", function handler() {
-          enterLink.removeEventListener("animationend", handler);
-          scheduleFlicker();
-        });
-      }, delay);
+        span.style.transform = "scale(1)";
+        setTimeout(onDone, 120);
+      }, 120);
     }
-    scheduleFlicker();
+
+    function runWave() {
+      var letterDelay = 70;
+      spans.forEach(function(span, i) {
+        setTimeout(function() {
+          flickerLetter(span, function() {
+            if (i === spans.length - 1) {
+              var pause = 2000 + Math.random() * 3000;
+              setTimeout(runWave, pause);
+            }
+          });
+        }, i * letterDelay);
+      });
+    }
+
+    runWave();
 
     // Step 3: fade out intro overlay, fade in main
     setTimeout(function() {
