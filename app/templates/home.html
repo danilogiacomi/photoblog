@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Photoblog{% endblock %}
+{% block extra_styles %}
+.catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2px;
+}
+.catalogue-card {
+  position: relative;
+  aspect-ratio: 3/2;
+  overflow: hidden;
+  display: block;
+}
+.catalogue-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.catalogue-card:hover img { transform: scale(1.03); }
+.catalogue-card-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
+}
+.catalogue-card-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+.catalogue-card-title { font-size: 15px; font-weight: 400; margin-bottom: 4px; }
+.catalogue-card-meta { font-size: 11px; color: rgba(255,255,255,0.6); }
+{% endblock %}
+{% block content %}
+<div class="catalogue-grid">
+  {% for cat in catalogues %}
+  <a href="/catalogue/{{ cat.slug }}" class="catalogue-card">
+    {% if cat.cover_image %}
+    <img src="/thumbnails/{{ cat.slug }}/{{ cat.cover_image }}"
+         alt="{{ cat.title }}" loading="lazy">
+    {% else %}
+    <div class="catalogue-card-placeholder"></div>
+    {% endif %}
+    <div class="catalogue-card-info">
+      <div class="catalogue-card-title">{{ cat.title }}</div>
+      <div class="catalogue-card-meta">
+        {% if cat.date %}{{ cat.date[:4] }}{% endif %}
+        {% if cat.location %} · {{ cat.location }}{% endif %}
+        · {{ cat.photo_count }} photos
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

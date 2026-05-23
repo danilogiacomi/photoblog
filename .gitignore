@@ -1,0 +1,11 @@
+photoblog.db
+thumbnails/
+display/
+.venv/
+__pycache__/
+*.pyc
+.superpowers/
+photos/
+
+config.yaml
+docs/superpowers/

@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}{{ photo.title }} — {{ catalogue.title }}{% endblock %}
+{% block extra_styles %}
+.photo-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+.photo-nav .back { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.photo-nav .back:hover { color: var(--text); }
+.photo-arrows { display: flex; gap: 8px; }
+.photo-arrows a, .photo-arrows span {
+  display: inline-block;
+  width: 38px;
+  text-align: center;
+  font-size: 22px;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+.photo-arrows a:hover { color: var(--text); }
+.photo-main { text-align: center; position: relative; cursor: zoom-in; }
+.photo-main img {
+  max-height: 82vh;
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Fullscreen overlay */
+#fs-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0d0d0d;
+  z-index: 100;
+  cursor: zoom-out;
+}
+#fs-overlay.active { display: flex; align-items: center; justify-content: center; }
+#fs-overlay img {
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.35s ease;
+}
+#fs-brand {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  text-align: right;
+  pointer-events: none;
+}
+#fs-brand span:first-child {
+  display: block;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 2px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+}
+#fs-brand span:last-child {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.3);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+}
+.fs-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  padding: 16px;
+  transition: color 0.2s;
+  pointer-events: all;
+}
+.fs-arrow:hover { color: #fff; }
+#fs-prev { left: 16px; }
+#fs-next { right: 16px; }
+.photo-meta {
+  padding: 24px 0 48px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.photo-title { font-size: 20px; font-weight: 300; margin-bottom: 8px; }
+.photo-caption { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+.photo-details { font-size: 12px; color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+.tag {
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); border: 1px solid #333; padding: 3px 8px; border-radius: 2px;
+}
+{% endblock %}
+{% block content %}
+<div class="photo-nav">
+  <a href="/catalogue/{{ catalogue.slug }}" class="back">← {{ catalogue.title }}</a>
+  <div class="photo-arrows">
+    {% if prev_photo %}
+    <a id="prev-link" href="/catalogue/{{ catalogue.slug }}/{{ prev_photo.filename }}">←</a>
+    {% else %}<span></span>{% endif %}
+    {% if next_photo %}
+    <a id="next-link" href="/catalogue/{{ catalogue.slug }}/{{ next_photo.filename }}">→</a>
+    {% else %}<span></span>{% endif %}
+  </div>
+</div>
+<div class="photo-main" id="photo-main">
+  <img src="/display/{{ catalogue.slug }}/{{ photo.filename }}" alt="{{ photo.title }}" id="photo-img">
+</div>
+
+<div id="fs-overlay">
+  <div id="fs-brand">
+    <span>{{ config.site_name }}</span>
+    <span>{{ config.tagline }}</span>
+  </div>
+  {% if prev_photo %}
+  <a class="fs-arrow" id="fs-prev" href="/catalogue/{{ catalogue.slug }}/{{ prev_photo.filename }}?fs=1">←</a>
+  {% endif %}
+  <img src="/display/{{ catalogue.slug }}/{{ photo.filename }}" alt="{{ photo.title }}">
+  {% if next_photo %}
+  <a class="fs-arrow" id="fs-next" href="/catalogue/{{ catalogue.slug }}/{{ next_photo.filename }}?fs=1">→</a>
+  {% endif %}
+</div>
+<div class="photo-meta">
+  {% if photo.title %}<h1 class="photo-title">{{ photo.title }}</h1>{% endif %}
+  {% if photo.caption %}<p class="photo-caption">{{ photo.caption }}</p>{% endif %}
+  {% if photo.date or photo.location %}
+  <div class="photo-details">
+    {% if photo.date %}{{ photo.date }}{% endif %}
+    {% if photo.location %} · {{ photo.location }}{% endif %}
+  </div>
+  {% endif %}
+  {% if photo.tags %}
+  <div class="tags">
+    {% for tag in photo.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+var overlay = document.getElementById("fs-overlay");
+var touchStartX = null;
+
+function handleSwipe(dx) {
+  var fs = overlay.classList.contains("active");
+  if (dx < -50) {
+    var l = fs ? document.getElementById("fs-prev") : document.getElementById("prev-link");
+    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+  } else if (dx > 50) {
+    var l = fs ? document.getElementById("fs-next") : document.getElementById("next-link");
+    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+  }
+}
+
+document.addEventListener("touchstart", function(e) {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener("touchend", function(e) {
+  if (touchStartX === null) return;
+  handleSwipe(touchStartX - e.changedTouches[0].clientX);
+  touchStartX = null;
+}, { passive: true });
+
+// Auto-open fullscreen if ?fs=1 in URL
+if (new URLSearchParams(window.location.search).get("fs") === "1") {
+  overlay.classList.add("active");
+  enterFullscreen();
+}
+
+// In-page navigation to keep fullscreen alive
+function navigateInPage(url) {
+  var baseUrl = url.replace(/\?.*$/, "");
+  var fsImg = overlay.querySelector("img");
+
+  // Fade out
+  fsImg.style.opacity = "0";
+
+  fetch(baseUrl)
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+      var doc = new DOMParser().parseFromString(html, "text/html");
+
+      // Update image and fade in once loaded
+      var newImg = doc.querySelector("#fs-overlay img");
+      if (newImg) {
+        var tmp = new Image();
+        tmp.onload = function() {
+          fsImg.src = tmp.src;
+          document.getElementById("photo-img").src = tmp.src;
+          fsImg.style.opacity = "1";
+        };
+        tmp.src = newImg.src;
+      }
+
+      // Update prev/next arrows in overlay
+      var newPrev = doc.getElementById("fs-prev");
+      var newNext = doc.getElementById("fs-next");
+      var fsPrev = document.getElementById("fs-prev");
+      var fsNext = document.getElementById("fs-next");
+      if (fsPrev) fsPrev.href = newPrev ? newPrev.getAttribute("href") : "#";
+      if (fsNext) fsNext.href = newNext ? newNext.getAttribute("href") : "#";
+      if (!newPrev && fsPrev) fsPrev.style.display = "none";
+      else if (fsPrev) fsPrev.style.display = "";
+      if (!newNext && fsNext) fsNext.style.display = "none";
+      else if (fsNext) fsNext.style.display = "";
+
+      // Update normal prev/next links
+      var normalPrev = doc.getElementById("prev-link");
+      var normalNext = doc.getElementById("next-link");
+      var lp = document.getElementById("prev-link");
+      var ln = document.getElementById("next-link");
+      if (lp && normalPrev) lp.href = normalPrev.getAttribute("href");
+      if (ln && normalNext) ln.href = normalNext.getAttribute("href");
+
+      history.pushState(null, "", baseUrl);
+    });
+}
+
+function enterFullscreen() {
+  var el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+
+document.getElementById("photo-main").addEventListener("click", function() {
+  overlay.classList.add("active");
+  enterFullscreen();
+});
+
+overlay.addEventListener("click", function(e) {
+  var arrow = e.target.closest(".fs-arrow");
+  if (arrow) {
+    e.preventDefault();
+    navigateInPage(arrow.href);
+  } else {
+    overlay.classList.remove("active");
+    exitFullscreen();
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    overlay.classList.remove("active");
+    exitFullscreen();
+  } else if (e.key === "ArrowLeft") {
+    var fs = overlay.classList.contains("active");
+    var l = fs ? document.getElementById("fs-prev") : document.getElementById("prev-link");
+    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+  } else if (e.key === "ArrowRight") {
+    var fs = overlay.classList.contains("active");
+    var l = fs ? document.getElementById("fs-next") : document.getElementById("next-link");
+    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+  }
+});
+</script>
+{% endblock %}

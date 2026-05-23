@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ catalogue.title }} — Photoblog{% endblock %}
+{% block extra_styles %}
+.catalogue-header { padding: 32px 0 24px; }
+.catalogue-title { font-size: 28px; font-weight: 300; letter-spacing: 1px; margin-bottom: 8px; }
+.catalogue-description { color: var(--muted); font-size: 14px; margin-bottom: 12px; max-width: 600px; }
+.catalogue-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+.tag {
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); border: 1px solid #333; padding: 3px 8px; border-radius: 2px;
+}
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+.photo-grid::after {
+  content: '';
+  flex-grow: 999999;
+  height: 220px;
+}
+.photo-item {
+  display: block;
+  height: 220px;
+  overflow: hidden;
+  flex-grow: 1;
+}
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.2s;
+}
+.photo-item:hover img { opacity: 0.85; }
+{% endblock %}
+{% block content %}
+<div class="catalogue-header">
+  <h1 class="catalogue-title">{{ catalogue.title }}</h1>
+  {% if catalogue.description %}
+  <p class="catalogue-description">{{ catalogue.description }}</p>
+  {% endif %}
+  <div class="catalogue-meta">
+    {% if catalogue.date %}{{ catalogue.date }}{% endif %}
+    {% if catalogue.location %} · {{ catalogue.location }}{% endif %}
+  </div>
+  {% if catalogue.tags %}
+  <div class="tags">
+    {% for tag in catalogue.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+<div class="photo-grid">
+  {% for photo in photos %}
+  <a class="photo-item"
+     href="/catalogue/{{ catalogue.slug }}/{{ photo.filename }}"
+     style="flex-basis: {{ ((photo.aspect_ratio or 1.5) * 220) | int }}px">
+    <img src="/thumbnails/{{ catalogue.slug }}/{{ photo.filename }}"
+         alt="{{ photo.title }}"
+         loading="lazy">
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

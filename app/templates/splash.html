@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ config.site_name }}</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0d0d0d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="{{ config.site_name }}">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d0d; overflow: hidden; height: 100vh; width: 100vw; font-family: "Cormorant Garamond", serif; }
+
+    /* Intro overlay */
+    #intro {
+      position: fixed;
+      inset: 0;
+      background: #0d0d0d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: opacity 1.2s ease;
+    }
+    #intro.fade-out { opacity: 0; pointer-events: none; }
+    #intro-block {
+      text-align: center;
+      opacity: 0;
+      transform: scale(1);
+      transition: opacity 0.8s ease, transform 0s;
+    }
+    #intro-block.visible {
+      opacity: 1;
+    }
+    #intro-block.shrink {
+      transition: opacity 1.2s ease, transform 2.5s ease;
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    #intro-text {
+      /* font-family: "Roboto", sans-serif; */
+      font-size: 30px;
+      font-weight: 300;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      color: #e8e8e8;
+      display: block;
+      margin-bottom: 10px;
+    }
+    #intro-sub {
+      /* font-family: "Roboto", sans-serif; */
+      font-size: 12px;
+      font-weight: 300;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.55);
+      display: block;
+    }
+
+    /* Main page */
+    #main {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+    #main.visible { opacity: 1; }
+
+    /* Hero photo */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('/hero-image');
+      background-size: cover;
+      background-position: center;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.35) 0%,
+        rgba(0,0,0,0.1) 40%,
+        rgba(0,0,0,0.5) 100%
+      );
+    }
+
+    /* UI on top of photo */
+    .hero-ui {
+      position: absolute;
+      inset: 0;
+      /* font-family: "Roboto", sans-serif; */
+      color: #e8e8e8;
+    }
+
+    /* Top-left identity block */
+    .hero-identity {
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .hero-name {
+      font-size: 32px;
+      font-weight: 300;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7);
+    }
+    .hero-sub {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.55);
+      display: block;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+    }
+
+    /* Bottom-center enter link */
+    .hero-enter {
+      position: absolute;
+      bottom: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.4);
+      padding-bottom: 4px;
+      transition: color 0.2s, border-color 0.2s;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.95), 0 0 40px rgba(0,0,0,0.8);
+    }
+    .hero-enter:hover { color: #fff; border-color: #fff; }
+    @keyframes flicker {
+      0%   { opacity: 1; }
+      10%  { opacity: 0.35; }
+      20%  { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    /* Bottom-center social icons */
+    .hero-social {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .hero-social a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: flex;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
+    }
+    .hero-social a:hover { color: #fff; }
+    .hero-social svg { width: 22px; height: 22px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+  <div id="intro">
+    <div id="intro-block">
+      <span id="intro-text">{{ config.site_name }}</span>
+      <span id="intro-sub">{{ config.tagline }}</span>
+    </div>
+  </div>
+
+  <div id="main">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-ui">
+      <div class="hero-identity">
+        <span class="hero-name">{{ config.site_name }}</span>
+        <span class="hero-sub">{{ config.tagline }}</span>
+      </div>
+      <a href="/gallery" class="hero-enter">enter gallery</a>
+      <div class="hero-social">
+        {% if config.instagram_url %}
+        <a href="{{ config.instagram_url }}" target="_blank" rel="noopener" title="Instagram">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+        {% endif %}
+        {% if config.facebook_url %}
+        <a href="{{ config.facebook_url }}" target="_blank" rel="noopener" title="Facebook">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js');
+    }
+    var introBlock = document.getElementById("intro-block");
+    var intro = document.getElementById("intro");
+    var main = document.getElementById("main");
+
+    // Step 1: fade in text
+    setTimeout(function() {
+      introBlock.classList.add("visible");
+    }, 200);
+
+    // Step 2: start shrink + fade out text
+    setTimeout(function() {
+      introBlock.classList.add("shrink");
+    }, 1800);
+
+    // Flicker with random interval between 2s and 5s
+    var enterLink = document.querySelector(".hero-enter");
+    function scheduleFlicker() {
+      var delay = 2000 + Math.random() * 3000;
+      setTimeout(function() {
+        enterLink.style.animation = "none";
+        enterLink.offsetHeight; // reflow
+        var duration = (0.4 + Math.random() * 0.4).toFixed(2);
+        enterLink.style.animation = "flicker " + duration + "s ease";
+        enterLink.addEventListener("animationend", function handler() {
+          enterLink.removeEventListener("animationend", handler);
+          scheduleFlicker();
+        });
+      }, delay);
+    }
+    scheduleFlicker();
+
+    // Step 3: fade out intro overlay, fade in main
+    setTimeout(function() {
+      intro.classList.add("fade-out");
+      main.classList.add("visible");
+    }, 3200);
+  </script>
+
+</body>
+</html>

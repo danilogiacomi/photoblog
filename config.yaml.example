@@ -1,0 +1,7 @@
+# Site branding configuration
+# Copy this file to config.yaml and fill in your details
+
+site_name: "Your Name"
+tagline: "Photography"          # shown below site name (e.g. "Photography · @yourhandle")
+instagram_url: ""               # e.g. https://instagram.com/yourhandle  (leave empty to hide)
+facebook_url: ""                # e.g. https://facebook.com/yourpage     (leave empty to hide)
