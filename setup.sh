@@ -9,7 +9,7 @@ info()    { printf "${CYAN}▸ %s${RESET}\n" "$*"; }
 success() { printf "${GREEN}✓ %s${RESET}\n" "$*"; }
 warn()    { printf "${YELLOW}⚠ %s${RESET}\n" "$*"; }
 fatal()   { printf "${RED}✗ %s${RESET}\n" "$*"; exit 1; }
-ask()     { printf "${BOLD}%s${RESET} ${DIM}%s${RESET}: " "$1" "$2"; }
+ask()     { printf "${BOLD}%s${RESET} ${DIM}%s${RESET}: " "$1" "${2:-}"; }
 
 # ── header ───────────────────────────────────────────────────────────────────
 echo
