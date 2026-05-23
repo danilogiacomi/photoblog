@@ -205,29 +205,18 @@ function navigateInPage(url) {
       tmp.src = newImg.src;
     }
 
-    // Update prev/next arrows in overlay
+    // Replace nav arrows wholesale so appearing/disappearing arrows work correctly
+    var newArrows = doc.querySelector(".photo-arrows");
+    var curArrows = document.querySelector(".photo-arrows");
+    if (newArrows && curArrows) curArrows.innerHTML = newArrows.innerHTML;
+
+    // Replace fullscreen arrows
     var newPrev = doc.getElementById("fs-prev");
     var newNext = doc.getElementById("fs-next");
     var fsPrev = document.getElementById("fs-prev");
     var fsNext = document.getElementById("fs-next");
-    if (fsPrev) fsPrev.href = newPrev ? newPrev.getAttribute("href") : "#";
-    if (fsNext) fsNext.href = newNext ? newNext.getAttribute("href") : "#";
-    if (!newPrev && fsPrev) fsPrev.style.display = "none";
-    else if (fsPrev) fsPrev.style.display = "";
-    if (!newNext && fsNext) fsNext.style.display = "none";
-    else if (fsNext) fsNext.style.display = "";
-
-    // Update normal prev/next links
-    var normalPrev = doc.getElementById("prev-link");
-    var normalNext = doc.getElementById("next-link");
-    var lp = document.getElementById("prev-link");
-    var ln = document.getElementById("next-link");
-    if (lp) lp.href = normalPrev ? normalPrev.getAttribute("href") : "#";
-    if (ln) ln.href = normalNext ? normalNext.getAttribute("href") : "#";
-    if (!normalPrev && lp) lp.style.display = "none";
-    else if (lp) lp.style.display = "";
-    if (!normalNext && ln) ln.style.display = "none";
-    else if (ln) ln.style.display = "";
+    if (fsPrev) { if (newPrev) { fsPrev.href = newPrev.getAttribute("href"); fsPrev.style.display = ""; } else fsPrev.style.display = "none"; }
+    if (fsNext) { if (newNext) { fsNext.href = newNext.getAttribute("href"); fsNext.style.display = ""; } else fsNext.style.display = "none"; }
 
     // Update photo metadata
     var newMeta = doc.querySelector(".photo-meta");

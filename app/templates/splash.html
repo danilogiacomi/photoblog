@@ -267,6 +267,15 @@
       intro.classList.add("fade-out");
       main.classList.add("visible");
     }, 3200);
+
+    // Dissolve to gallery on click
+    document.querySelector(".hero-enter").addEventListener("click", function(e) {
+      e.preventDefault();
+      var href = this.href;
+      document.body.style.transition = "opacity 0.5s ease";
+      document.body.style.opacity = "0";
+      setTimeout(function() { window.location.href = href; }, 500);
+    });
   </script>
 
 </body>

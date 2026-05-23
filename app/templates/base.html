@@ -27,6 +27,8 @@
       /* font-family: "Roboto", sans-serif; */
       font-weight: 300;
       min-height: 100vh;
+      opacity: 0;
+      transition: opacity 1.2s ease;
     }
     nav {
       padding: 24px 32px;
@@ -71,6 +73,9 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/static/sw.js');
     }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.style.opacity = '1';
+    });
   </script>
 </body>
 </html>
