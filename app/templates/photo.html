@@ -25,6 +25,7 @@
   max-width: 100%;
   display: block;
   margin: 0 auto;
+  transition: opacity 0.35s ease;
 }
 
 /* Fullscreen overlay */
@@ -151,10 +152,10 @@ function handleSwipe(dx) {
   var fs = overlay.classList.contains("active");
   if (dx < -50) {
     var l = fs ? document.getElementById("fs-prev") : document.getElementById("prev-link");
-    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+    if (l) navigateInPage(l.href);
   } else if (dx > 50) {
     var l = fs ? document.getElementById("fs-next") : document.getElementById("next-link");
-    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+    if (l) navigateInPage(l.href);
   }
 }
 
@@ -174,27 +175,28 @@ if (new URLSearchParams(window.location.search).get("fs") === "1") {
   enterFullscreen();
 }
 
-// In-page navigation to keep fullscreen alive
+// In-page navigation with fade (works in and out of fullscreen)
 function navigateInPage(url) {
   var baseUrl = url.replace(/\?.*$/, "");
   var fsImg = overlay.querySelector("img");
+  var mainImg = document.getElementById("photo-img");
 
-  // Fade out
   fsImg.style.opacity = "0";
+  mainImg.style.opacity = "0";
 
   fetch(baseUrl)
     .then(function(r) { return r.text(); })
     .then(function(html) {
       var doc = new DOMParser().parseFromString(html, "text/html");
 
-      // Update image and fade in once loaded
       var newImg = doc.querySelector("#fs-overlay img");
       if (newImg) {
         var tmp = new Image();
         tmp.onload = function() {
           fsImg.src = tmp.src;
-          document.getElementById("photo-img").src = tmp.src;
+          mainImg.src = tmp.src;
           fsImg.style.opacity = "1";
+          mainImg.style.opacity = "1";
         };
         tmp.src = newImg.src;
       }
@@ -216,8 +218,12 @@ function navigateInPage(url) {
       var normalNext = doc.getElementById("next-link");
       var lp = document.getElementById("prev-link");
       var ln = document.getElementById("next-link");
-      if (lp && normalPrev) lp.href = normalPrev.getAttribute("href");
-      if (ln && normalNext) ln.href = normalNext.getAttribute("href");
+      if (lp) lp.href = normalPrev ? normalPrev.getAttribute("href") : "#";
+      if (ln) ln.href = normalNext ? normalNext.getAttribute("href") : "#";
+      if (!normalPrev && lp) lp.style.display = "none";
+      else if (lp) lp.style.display = "";
+      if (!normalNext && ln) ln.style.display = "none";
+      else if (ln) ln.style.display = "";
 
       history.pushState(null, "", baseUrl);
     });
@@ -239,6 +245,14 @@ document.getElementById("photo-main").addEventListener("click", function() {
   enterFullscreen();
 });
 
+document.querySelector(".photo-arrows").addEventListener("click", function(e) {
+  var link = e.target.closest("a");
+  if (link) {
+    e.preventDefault();
+    navigateInPage(link.href);
+  }
+});
+
 overlay.addEventListener("click", function(e) {
   var arrow = e.target.closest(".fs-arrow");
   if (arrow) {
@@ -257,11 +271,11 @@ document.addEventListener("keydown", function(e) {
   } else if (e.key === "ArrowLeft") {
     var fs = overlay.classList.contains("active");
     var l = fs ? document.getElementById("fs-prev") : document.getElementById("prev-link");
-    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+    if (l) navigateInPage(l.href);
   } else if (e.key === "ArrowRight") {
     var fs = overlay.classList.contains("active");
     var l = fs ? document.getElementById("fs-next") : document.getElementById("next-link");
-    if (l) fs ? navigateInPage(l.href) : (window.location.href = l.href);
+    if (l) navigateInPage(l.href);
   }
 });
 </script>
