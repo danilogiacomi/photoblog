@@ -119,13 +119,9 @@
     <span>{{ config.site_name }}</span>
     <span>{{ config.tagline }}</span>
   </div>
-  {% if prev_photo %}
-  <a class="fs-arrow" id="fs-prev" href="/catalogue/{{ catalogue.slug }}/{{ prev_photo.filename }}?fs=1">←</a>
-  {% endif %}
+  <a class="fs-arrow" id="fs-prev" href="{{ ('/catalogue/' ~ catalogue.slug ~ '/' ~ prev_photo.filename ~ '?fs=1') if prev_photo else '#' }}"{% if not prev_photo %} style="display:none"{% endif %}>←</a>
   <img src="/display/{{ catalogue.slug }}/{{ photo.filename }}" alt="{{ photo.title }}">
-  {% if next_photo %}
-  <a class="fs-arrow" id="fs-next" href="/catalogue/{{ catalogue.slug }}/{{ next_photo.filename }}?fs=1">→</a>
-  {% endif %}
+  <a class="fs-arrow" id="fs-next" href="{{ ('/catalogue/' ~ catalogue.slug ~ '/' ~ next_photo.filename ~ '?fs=1') if next_photo else '#' }}"{% if not next_photo %} style="display:none"{% endif %}>→</a>
 </div>
 <div class="photo-meta">
   {% if photo.title %}<h1 class="photo-title">{{ photo.title }}</h1>{% endif %}
@@ -210,13 +206,19 @@ function navigateInPage(url) {
     var curArrows = document.querySelector(".photo-arrows");
     if (newArrows && curArrows) curArrows.innerHTML = newArrows.innerHTML;
 
-    // Replace fullscreen arrows
+    // Update fullscreen arrows
     var newPrev = doc.getElementById("fs-prev");
     var newNext = doc.getElementById("fs-next");
     var fsPrev = document.getElementById("fs-prev");
     var fsNext = document.getElementById("fs-next");
-    if (fsPrev) { if (newPrev) { fsPrev.href = newPrev.getAttribute("href"); fsPrev.style.display = ""; } else fsPrev.style.display = "none"; }
-    if (fsNext) { if (newNext) { fsNext.href = newNext.getAttribute("href"); fsNext.style.display = ""; } else fsNext.style.display = "none"; }
+    if (fsPrev && newPrev) {
+      fsPrev.href = newPrev.getAttribute("href");
+      fsPrev.style.display = newPrev.style.display;
+    }
+    if (fsNext && newNext) {
+      fsNext.href = newNext.getAttribute("href");
+      fsNext.style.display = newNext.style.display;
+    }
 
     // Update photo metadata
     var newMeta = doc.querySelector(".photo-meta");
@@ -272,11 +274,11 @@ document.addEventListener("keydown", function(e) {
   } else if (e.key === "ArrowLeft") {
     var fs = overlay.classList.contains("active");
     var l = fs ? document.getElementById("fs-prev") : document.getElementById("prev-link");
-    if (l) navigateInPage(l.href);
+    if (l && l.style.display !== "none") navigateInPage(l.href);
   } else if (e.key === "ArrowRight") {
     var fs = overlay.classList.contains("active");
     var l = fs ? document.getElementById("fs-next") : document.getElementById("next-link");
-    if (l) navigateInPage(l.href);
+    if (l && l.style.display !== "none") navigateInPage(l.href);
   }
 });
 </script>
