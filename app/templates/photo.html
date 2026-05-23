@@ -229,6 +229,14 @@ function navigateInPage(url) {
     if (!normalNext && ln) ln.style.display = "none";
     else if (ln) ln.style.display = "";
 
+    // Update photo metadata
+    var newMeta = doc.querySelector(".photo-meta");
+    var curMeta = document.querySelector(".photo-meta");
+    if (newMeta && curMeta) curMeta.innerHTML = newMeta.innerHTML;
+
+    // Update page title
+    document.title = doc.title;
+
     history.pushState(null, "", baseUrl);
   });
 }
